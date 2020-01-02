@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>星空</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        html, body{
+            height: 100%;
+        }
+        body{
+            background: linear-gradient(to bottom,#000000 0%,#5788fe 100%);
+        }
+        .canvas-box{
+            width: 100%;
+            height: 100%;
+            background: url('./img/bg.png') left bottom no-repeat;
+            background-size: contain;
+        }
+        .filter {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: #fe5757;
+            animation: colorChange 30s ease-in-out infinite;
+            animation-fill-mode: both;
+            mix-blend-mode: overlay;
+        }
+
+        @keyframes colorChange {
+            0%, 100% {
+                opacity: 0;
+            }
+            50% {
+                opacity: .9;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="canvas-box">
+        <div class='filter'></div>
+        <canvas id="canvas">浏览器不支持canvas</canvas>
+    </div>
+    <script src="./js/round-item.js"></script>
+    <script>
+        let canvas = document.querySelector("#canvas"),
+            context = canvas.getContext('2d'),
+            round = [],
+            WIDTH,
+            HEIGHT,
+            initRoundPopulation = 80,
+            mouseAnimatePara = {
+                num: 100,
+                color: false, // 颜色，如果是false则随机渐变颜色
+                r: 0.9,       // 圆每次增加的半径
+                o: 0.09,      // 判断圆消失的条件，数值越大，消失越快
+                a: 1
+            },
+            color,
+            color2,
+            mouseAnimate_arr = []  //存放鼠标动画个体的数组
+        
+
+        WIDTH = document.documentElement.clientWidth
+        HEIGHT = document.documentElement.clientHeight
+
+        canvas.width = WIDTH
+        canvas.height = HEIGHT
+
+        window.onmousemove = (event) => {
+            let mouseX = event.clientX,
+                mouseY = event.clientY
+            
+            mouseAnimate_arr.push({
+                mouseX: mouseX,
+                mouseY: mouseY,
+                r: mouseAnimatePara.r, // 设置半径每次增大的数值
+                o: 1 // 判断圆消失的条件，数值越大，消失越快
+            })
+        }
+
+        // 判断参数中是否设置了 color，如果设置了 color，就使用该值、
+        // 如果参数中的 color 为 false，那么就使用随机的颜色
+        if (mouseAnimatePara.color) {
+            color2 = mouseAnimatePara.color;
+        } else {
+            color = Math.random() * 360;
+        }
+
+        function mouseAnimate() {
+            if(!mouseAnimatePara.color){
+                color += .1
+                color2 = 'hsl(s' + color + ',100%,80%)';
+            }
+            context.clearRect(0, 0, WIDTH, HEIGHT)
+
+            for(let i = 0; i<mouseAnimate_arr.length; i++){
+                context.fillStyle = color2
+                context.beginPath()
+                context.arc(mouseAnimate_arr[i].mouseX, mouseAnimate_arr[i].mouseY, mouseAnimate_arr[i].r, 0, Math.PI * 2)
+                context.closePath()
+                context.fill()
+                mouseAnimate_arr[i].r += mouseAnimatePara.r
+                mouseAnimate_arr[i].o -= mouseAnimatePara.o
+
+                if(mouseAnimate_arr[i].o <= 0){
+                    mouseAnimate_arr.splice(i, 1)
+                    i--
+                }
+            }
+            requestAnimationFrame(mouseAnimate)
+        }
+
+        function starAnimate() { 
+            context.clearRect(0, 0, WIDTH, HEIGHT);
+            for(let i in round){
+                round[i].move(context)
+            }
+            requestAnimationFrame(starAnimate)
+        }
+
+        function init() { 
+            for(let i = 0;i < initRoundPopulation;i++){
+                round[i] = new Round_item(i, Math.random() * WIDTH,Math.random() * HEIGHT)
+                round[i].draw(context)
+            }
+            starAnimate()
+            mouseAnimate()
+        }        
+        init()
+    </script>
+</body>
+</html>

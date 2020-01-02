@@ -195,3 +195,127 @@ console 默认就被 async 包裹，可直接使用 `await`
 
 ![Event listeners 面板](https://developers.google.cn/web/tools/chrome-devtools/console/images/events-eventlisteners_panel.png?hl=zh-cn)
 
+
+
+
+
+
+
+# console中骚操作
+
+**console.assert：**
+
+当我们传入的第一个参数为 **假** 时，`console.assert` 打印跟在这个参数后面的值。
+
+
+
+**enhanced object literal(增强对象文字面量)：**
+
+你可以打印一个对象 - 只需将所有 `console.log` 的参数包装在大括号中，所以加上 `{}` 已经是你需要做的全部事情了：
+
+![img](https://user-gold-cdn.xitu.io/2019/1/22/1687447f46cb18a2?imageView2/0/w/1280/h/960/ignore-error/1)
+
+
+
+**console.table：**
+
+如果有一个 **数组** (或者是 **类数组** 的对象，或者是一个 **对象** )需要打印，你可以使用`console.table` 方法将它以一个漂亮的表格的形式打印出来。它不仅会根据数组中包含的对象的所有属性，去计算出表中的列名，而且这些列都是可以 **缩放** 甚至 **还可以排序!!!**
+
+如果你觉得展示的列太多了，使用第二个参数，传入你想要展示的列的名字。
+
+
+
+**console.dir：**
+
+你想要打印一个 `DOM` 节点。 `console.log` 会将这个交互式的元素渲染成像是从 `Elements` 中剪切出来的一样。`console.dir`可查看 **这个节点所关联到的真实的js对象** ，并且想要查看他的 **属性** 。
+
+
+
+**给logs加上时间戳：**
+
+如果你想要给应用中发生的事件加上一个确切的时间记录，开启 *timestamps* 。你可以在设置(在调试工具中的 `⋮` 下拉中找到它，或者按下 `F1` )中来开启或者使用 [Commands Menu](https://medium.com/@tomsu/devtools-tips-day-6-thecommand-menu-449eb3966d9#7404)，输入timestamps
+
+
+
+**监测执行时间：**
+
+与其在所有事上展示一个时间戳，或许你对脚本中的特殊的节点之间执行的时间跨度更加感兴趣，对于这样的情况，我们可以采用一对有效的 `console` 方法
+
+- `console.time()` — 开启一个计时器
+- `console.timeEnd()` — 结束计时并且将结果在 `console` 中打印出来
+
+如果你想一次记录多件事，可以往这些函数中传入不同的标签值。(例如: `console.time('loading')` ， `console.timeEnd('loading')` )。
+
+
+
+**给console.log加上css样式：**
+
+如果你给打印文本加上 `%c` 那么 `console.log` 的第二个参数就变成了`CSS` 规则！
+
+例：console.log('%c牛逼','font-size: 50px; color: red;')
+
+
+
+**让 `console.log` 基于调用堆栈自动缩进：**
+
+配合 `Error` 对象的 `stack` 属性，让你的 `log` 可以根据堆栈的调用自动缩进：
+
+```javascript
+function log(message) {
+      console.log(
+        // 这句话是重点当我们 new 出来的 Error 对象时，会匹配它的stack 信息中的换行符，换            行符出现的次数也等同于它在堆栈调用时的深度。
+        ' '.repeat(new Error().stack.match(/\n/g).length - 2) + message
+      );
+}
+function foo() {
+   log('foo');
+   return bar() + bar();
+}
+
+function bar() {
+  log('bar');
+  return baz() + baz();
+}
+
+function baz() {
+  log('baz');
+  return 17;
+}
+
+foo();
+```
+
+运行结果如下：
+
+![img](https://user-gold-cdn.xitu.io/2019/1/14/1684b5b03d4ebb82?imageView2/0/w/1280/h/960/ignore-error/1)
+
+
+
+**在回调中使用`console.log`：**
+
+是不是经常有这样的情况，就是我确定要将什么传递给回调函数。在这种情况下，我会在里面添加一个 `console.log` 来检查。
+
+有两种方式来实现：
+
+- 在回调方法的内部使用 `console.log`
+- **直接使用 console.log 来作为回调方法**。
+
+推荐使用第二种，因为这不仅减少了输入，还可能在回调中接收多个参数。(这在第一个解决方案中是没有的)
+
+![img](https://user-gold-cdn.xitu.io/2019/1/22/168744938b968240?imageView2/0/w/1280/h/960/ignore-error/1)
+
+
+
+****
+
+
+
+**使用实时表达式：**
+
+在本文形成的不久前，`DevTools` 在 `Console` 面板中引入了一个非常漂亮的附加功能，这是一个名为 `Live expression` 的工具
+
+只需按下 "眼睛" 符号，你就可以在那里定义任何 `JavaScript` 表达式。 它会不断更新，所以表达的结果将永远存在 。
+
+同时支持定义好几个：
+
+![img](https://user-gold-cdn.xitu.io/2018/12/29/167f82b33009449f?imageslim)
