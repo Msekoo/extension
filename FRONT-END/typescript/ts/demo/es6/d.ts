@@ -1,0 +1,1 @@
+export = function () { console.log('I am default')} // 会被作为顶级导出，且不能有其他导出
