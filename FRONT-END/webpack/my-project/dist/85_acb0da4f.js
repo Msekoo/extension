@@ -1,0 +1,1 @@
+(self.webpackChunkdemo=self.webpackChunkdemo||[]).push([[85],{85:function(e,n,t){"use strict";t.r(n);var u=t(559),c=t.n(u);n.default=function(){return c().createElement("div",null,"dynamic import")}}}]);
