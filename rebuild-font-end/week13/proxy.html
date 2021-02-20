@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    #color {
+      width: 100px;
+      height: 100px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>proxy</h1>
+  <input id="r" type="range" min="0" max="255">
+  <input id="g" type="range" min="0" max="255">
+  <input id="b" type="range" min="0" max="255">
+
+  <div id="color"></div>
+  <div id="text">Hello {{name}}!</div>
+</body>
+<script>
+  let object = {
+    a: 1,
+    b: 2
+  };
+  let handlers = new Map();
+  let reactives = new Map();
+  let usedReactivities = [];
+
+  function reactive(obj) {
+    if (reactives.has(obj)) {
+      return reactives.get(obj);
+    }
+    let proxy = new Proxy(obj, {
+      get(obj, prop) {
+        usedReactivities.push({ obj, prop });
+        if (typeof obj[prop] === 'object') {
+          return reactive(obj[prop]);
+        }
+        return obj[prop];
+      },
+      set(obj, prop, val) {
+        obj[prop] = val;
+        if (handlers.has(obj) && handlers.get(obj).has(prop)) {
+          for (let handler of handlers.get(obj).get(prop)) {
+            handler();
+          }
+        }
+        return obj[prop];
+      }
+    })
+
+    reactives.set(obj, proxy);
+    reactives.set(proxy, proxy);
+    return proxy;
+  }
+
+  function effect(handler) {
+    usedReactivities = []
+    handler();
+    for (let usedReactivity of usedReactivities) {
+      let { obj, prop } = usedReactivity;
+      if (!handlers.has(obj)) {
+        handlers.set(obj, new Map());
+      }
+      if (!handlers.get(obj).has(prop)) {
+        handlers.get(obj).set(prop, []);
+      }
+      handlers.get(obj).get(prop).push(handler)
+    }
+  }
+
+  // let proxy = reactive(object);
+  // let dummy;
+  // effect(() => dummy = proxy.a);
+  // console.log(dummy);
+  // proxy.a = 2;
+  // console.log(dummy);
+
+  let R = document.getElementById("r");
+  let G = document.getElementById("g");
+  let B = document.getElementById("b");
+
+  let color = reactive({ r: 100, g: 100, b: 100 });
+  effect(() => {
+    R.value = color.r;
+  })
+  effect(() => {
+    G.value = color.g;
+  })
+  effect(() => {
+    B.value = color.b;
+  })
+  R.addEventListener('input', (e) => {
+    color.r = e.target.value;
+  })
+
+  G.addEventListener('input', (e) => {
+    color.g = e.target.value;
+  })
+
+  B.addEventListener('input', (e) => {
+    color.b = e.target.value;
+  })
+
+
+  effect(() => document.getElementById('color').style.backgroundColor = `rgb(${color.r},${color.g},${color.b})`)
+
+  let txtNode = document.getElementById("text");
+  let range = new Range();
+  range.setStart(txtNode.childNodes[0], 6);
+  range.setEnd(txtNode.childNodes[0], 14);
+  let data = reactive({text: "world"});
+  effect(() => {
+    range.extractContents();
+    range.insertNode(document.createTextNode(data.text));
+  })
+
+</script>
