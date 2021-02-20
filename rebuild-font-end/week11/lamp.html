@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        .circle {
+            width: 100px;
+            height: 100px;
+            display: inline-block;
+            margin-right: 50px;
+            border-radius: 50%;
+            background-color: grey;
+        }
+
+        .light.red {
+            background-color: red;
+        }
+
+        .light.yellow {
+            background-color: yellow;
+        }
+
+        .light.green {
+            background-color: green;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="red circle"></div>
+    <div class="yellow circle"></div>
+    <div class="green circle"></div>
+    <button id="btn">start</button>
+</body>
+<script>
+    function clearLight() {
+        let lights = document.getElementsByTagName("div");
+        for (let i = 0; i < 3; i++)
+            lights[i].classList.remove("light")
+    }
+    function red() {
+        clearLight()
+        document.getElementsByClassName("red")[0].classList.add("light")
+    }
+    function yellow() {
+        clearLight()
+        document.getElementsByClassName("yellow")[0].classList.add("light")
+    }
+    function green() {
+        clearLight()
+        document.getElementsByClassName("green")[0].classList.add("light")
+    }
+    function sleep(t) {
+        return new Promise((resolve, reject) => {
+            setTimeout(resolve, t)
+        })
+    }
+    function happen(element, eventName) {
+        return new Promise((resolve, reject) => {
+            element.addEventListener(eventName, resolve, { once: true })
+        })
+    }
+    function go() {
+        green()
+        sleep(1000).then(() => {
+            yellow()
+            return sleep(2000)
+        }).then(() => {
+            red()
+            return sleep(5000)
+        }).then(go)
+    }
+    async function go2() {
+        green()
+        await sleep(10000)
+        yellow()
+        await sleep(2000)
+        red()
+        await sleep(5000)
+        go2()
+    }
+    async function go3() {
+        green()
+        await happen(document.getElementById('btn'), 'click')
+        yellow()
+        await happen(document.getElementById('btn'), 'click')
+        red()
+        await happen(document.getElementById('btn'), 'click')
+        go3()
+    }
+
+    // function* go4() {
+    //     while (true) {
+    //         green()
+    //         yield sleep(1000)
+    //         yellow()
+    //         yield sleep(200)
+    //         red()
+    //         yield sleep(500)
+    //     }
+    // }
+
+    // function run(iterator) {
+    //     let { value, done } = iterator.next();
+    //     if (done) return;
+    //     if (value instanceof Promise)
+    //         value.then(() => {
+    //             run(iterator)
+    //         })
+    // }
+
+    // function co(generator) {
+    //     return function () {
+    //         return run(generator())
+    //     }
+    // }
+
+    // go4 = co(go4)
+
+    function* go5() {
+        yield 1;
+        yield 2;
+        yield 3;
+    }
+    for (let v of go5()) {
+        console.log(v)
+    }
+
+    async function go7() {
+        async function* go6() {
+            let i = 0
+            while (true) {
+                await sleep(1000)
+                yield i++;
+            }
+        }
+        for await (let v of go6()) {
+            console.log(v)
+        }
+    }
+
+</script>
+
+</html>
