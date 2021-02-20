@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <div>
+        <div id="wrap" class="class-one" title="tt1">
+            <div id="ji" class="class-two class-three" title="tt2">
+                jiji&gt;
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    function match(selector, element){
+        let selectorList = selector.split(' ');
+        let targetSelector = selectorList.pop();
+        let tagRegex = /^[\w-]+/;
+        let idRegex = /\#[\w-_]+/;
+        let clsRegex = /(\.[\w-_]+)+/;
+        let attrRegex = /\[[\w-]+=(([\w-_]+)|(\'[\w-]+\')|(\"[\w-]+\"))\]/;
+        let selectorType= ['tag', 'id', 'class', 'attr'];  
+        let isMatch = false;
+
+        selectorType.forEach(item => {
+                if(item === 'tag'){
+                    if(!targetSelector.match(tagRegex) || targetSelector.match(tagRegex) && targetSelector.match(tagRegex)[0] === element.tagName.toLowerCase())
+                        isMatch = true
+                    else if(targetSelector.match(tagRegex) && targetSelector.match(tagRegex)[0] !== element.tagName.toLowerCase())
+                        isMatch = false
+                }
+                if(item === 'id'){
+                    let flag = true
+                    if(!targetSelector.match(idRegex) || targetSelector.match(idRegex) && targetSelector.match(idRegex)[0].slice(1) === element.id)
+                        flag = true;
+                    else if(targetSelector.match(idRegex) && targetSelector.match(idRegex)[0].slice(1) !== element.id)
+                        flag = false
+                    isMatch = isMatch && flag;
+                }
+                if(item === 'class'){
+                    let flag = true
+                    if(targetSelector.match(clsRegex)){
+                        let curClassArr = targetSelector.match(clsRegex)[0].slice(1).split('.')
+                        for(let j = 0;j < curClassArr.length; j++){
+                            let item = curClassArr[j];
+                            let arr = element.classList
+                            for(let i = 0;i < arr.length;i++){
+                                if(arr[i] === item){
+                                    flag = true
+                                    break
+                                } else {
+                                    flag = false;
+                                }
+                            }
+                            if(flag) break
+                        }
+                    }
+                    if(!targetSelector.match(clsRegex)){
+                        flag = true
+                    }
+                    isMatch = isMatch && flag;
+                }
+                if(item === 'attr'){
+                    let flag = true
+                    // 目前处理一个属性
+                    if(targetSelector.match(attrRegex)){
+                        let attrArr = targetSelector.match(attrRegex)[0].split('[')[1].split(']')[0].split('=');
+                        let attrKey = attrArr[0];
+                        let attrValue = attrArr[1];
+                        if(element.getAttribute(attrKey) == attrValue || `'${element.getAttribute(attrKey)}'` == attrValue || `"${element.getAttribute(attrKey)}"` == attrValue){                 
+                            flag = true;
+                        }else if(element.getAttribute(attrKey) !== attrValue && element.getAttribute(attrKey) != `'${attrValue}'` && element.getAttribute(attrKey) != `"${attrValue}"`){
+                            flag = false;
+                        }
+                    }
+                    isMatch = isMatch && flag;
+                }
+        });
+        return isMatch;
+    }
+
+    console.log('result', match("#wrap.class-one[title=tt1] div#ji.class-two.class-three[title=tt2]", document.getElementById('ji')))
+</script>
+</html>
